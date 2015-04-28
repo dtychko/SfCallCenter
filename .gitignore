@@ -1,0 +1,4 @@
+*.user
+SfCallCenter/bin/
+SfCallCenter/obj/
+*.suo

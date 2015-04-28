@@ -1,0 +1,227 @@
+﻿* {
+    font-size: 11px;
+}
+
+body {
+    margin: 0;
+    background-color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.container {
+    width: 14em;
+    border: 0px solid #000;
+    margin: 0 auto;
+}
+
+.error-msg {
+    color: #cd0a0a;
+}
+.error-msg.hide {
+    display: none;
+}
+
+#phone {
+    background-color: #F8F8F8;
+    border: 1px solid #BABABA;
+}
+
+#sign-in-form {
+    margin: 10px;
+}
+#sign-in-form label {
+    display: block;
+}
+#sign-in-form .field {
+    display: block;
+    width: 10em;
+    border: 1px solid #d7d7d7;
+    border-radius: 20px;
+    line-height: 22px;
+    padding: 0 10px;
+}
+#sign-in-btn{
+    display: block;
+    width: 70px;
+    margin: 10px auto;
+    height: 26px;
+}
+
+#head {
+    /*background-color: #8899AC;*/
+    background-color: #fff;
+    padding: 3px;
+    border: 1px solid #BABABA;
+    border-width: 0 0 1px 0;
+    /*height: 16px;*/
+    position: relative;
+    overflow: hidden;
+}
+#head .sign-out {
+    display: block;
+    text-align: right;
+    margin-right: 3px;
+    margin-top: 6px;
+}
+#head .sign-out a{
+    /*color: #fff;*/
+    text-decoration: none;
+    font-weight: bold;
+    /*font-size: 12px;*/
+}
+#head .sign-out a:hover {
+    text-decoration: underline;
+}
+
+#connection-info {
+    background-color: #DEDEDE;
+    padding: 3px;
+    border: 1px solid #BABABA;
+    border-width: 0 0 1px 0;
+}
+.connection-info-group {
+    position: relative;
+    overflow: hidden;
+}
+.connection-info-group .lbl {
+	display: block;
+	width: 50px;
+	float: left;
+	text-align: right;
+	font-weight: bold;
+}
+.connection-info-group .val {
+	display: block;
+	margin-left: 55px;
+}
+
+#screen {
+    margin: 3px;
+    overflow: hidden;
+}
+#screen input {
+    margin: 5px;
+    width: 10em;
+    text-align: center;
+    border: 1px solid #d7d7d7;
+    border-radius: 20px;
+    line-height: 22px;
+    padding: 0 10px;
+}
+
+#call-info {
+    padding: 5px;
+    margin: 4px;
+}
+#call-info .lbl-val-group {
+    border-width: 0 0 1px 0;
+    border-color: #BABABA;
+    border-style: solid;
+}
+#call-info .lbl-val-group .lbl {
+    width: 60px;
+}
+#call-info .lbl-val-group .val {
+    margin-left: 65px;
+}
+.call-info-group {
+    position: relative;
+    padding: 7px 0 0 0;
+    border: 1px solid #BABABA;
+    border-width: 1px 0 0 0;
+    margin-top: 14px;
+}
+
+.call-info-group .lbl {
+    display: inline-block;
+    position: absolute;
+    top: -9px;
+    padding: 0 3px 0 0;
+    background-color: #F8F8F8;
+    /*font-size: 12px;*/
+    font-weight: bold;
+}
+
+.call-info-group .val {
+    display: block;
+    margin-left: 10px;
+}
+
+#keypad {
+    margin: 4px 1em 8px 1em;
+    overflow: hidden;
+}
+#keypad ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    overflow: hidden;
+}
+#keypad ul li {
+    display: block;
+    float: left;
+    margin: 5px;
+    padding: 0;
+}
+
+.key {
+    width: 3em;
+    height: 3em;
+    font-weight: bold;
+    background-color: #D4D2D3;
+    border: 1px solid #D7D6D7;
+    border-radius: 5px;
+}
+.key:hover {
+    background-color: #eceaeb;
+}
+.key:active {
+    background-color: #bcbcbc;
+}
+
+.success-btn {
+    background-color: #00BE5C;
+    border: 1px solid #00CC6A;
+    color: #fff;
+}
+.success-btn:hover {
+    background-color: #00df6c;
+}
+.success-btn:active {
+    background-color: #01a04e;
+}
+
+.fail-btn {
+    background-color: #FF8080;
+    border: 1px solid #FFA1A1;
+    color: #fff;
+}
+.fail-btn:hover {
+    background-color: #fea2a2;
+}
+.fail-btn:active {
+    background-color: #ff5252;
+}
+
+.call-action-btn {
+    width: 10em;
+    margin: 8px 1em 0 1em;
+}
+
+.call-btn {
+    width: 7em;
+    background: url("Images/phone_2_icon&24white.png") no-repeat 2.5em 0.5em #00BE5C;
+}
+
+.backspace {
+    background: url("Images/backspace.png") no-repeat 0.5em 0.5em #D4D2D3;
+}
+
+.accept-btn {
+    background: url("Images/phone_2_icon&24white.png") no-repeat 4em 0.5em #00BE5C;
+}
+.hang-up-btn {
+    background: url("Images/phone_1_icon&24white.png") no-repeat 4em 0.5em #FF8080;
+}
+.continue-btn {
+    background: url("Images/phone_icon&24white.png") no-repeat 4em 0.5em #00BE5C;
+}

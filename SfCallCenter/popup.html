@@ -1,0 +1,299 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>SIP Session</title>
+    <script src="Scripts/jquery-1.8.2.js" type="text/javascript"></script>
+    <script src="Scripts/jssip.js" type="text/javascript"></script>
+    <script>
+        (function($, JsSIP) {
+
+            function log(message) {
+                $("#log").html($("#log").html() + "<br/>" + new Date().toLocaleTimeString() + ": " + message);
+            }
+
+
+            function Events() {
+                this.callbacks = {};
+            }
+
+            Events.prototype = {
+                on: function(event, fn) {
+                    if (!this.callbacks[event]) {
+                        this.callbacks[event] = $.Callbacks();
+                    }
+                    this.callbacks[event].add(fn);
+                },
+                off: function(event, fn) {
+                    if (this.callbacks[event]) {
+                        this.callbacks[event].remove(fn);
+                    }
+                },
+                trigger: function() {
+                    for (var i = 0; i < arguments.length; i++) {
+                        var event = arguments[i];
+
+                        if (this.callbacks[event]) {
+                            this.callbacks[event].fire();
+                        }
+                    }
+                }
+            };
+
+
+            function Session(session, direction, connection, number) {
+
+                var self = this;
+                var events = new Events();
+
+                this.direction = direction;
+                this.number = number;
+                this.status = null;
+                this.active = true;
+                this.inProgress = false;
+                this.answerTime = null;
+
+                this.on = function(event, fn) {
+                    log("Session.on() '" + event + "' event");
+                    events.on(event, fn);
+                };
+                this.off = function (event, fn) {
+                    log("Session.off() '" + event + "' event");
+                    events.off(event, fn);
+                };
+                this.terminate = function() {
+                    log("Session.terminate()");
+                    session.terminate();
+                };
+                this.answer = function() {
+                    log("Session.answer()");
+                    session.answer();
+                };
+
+                init();
+
+                function init() {
+                    log("Session.init()");
+
+                    if (self.direction == "in") {
+                        self.status = "Incoming call...";
+                    } else {
+                        self.status = "Trying...";
+                    }
+
+                    attachEvents();
+                }
+                function attachEvents() {
+                    session.on("progress", function(e) {
+                        log("Session 'progress' event");
+                        setState("In progress...", true, false);
+                    });
+                    session.on("started", function(e) {
+                        log("Session 'started' event");
+                        self.answerTime = new Date();
+                        setState("Answered", true, true);
+                    });
+                    session.on("failed", function(e) {
+                        log("Session 'failed' event");
+                        setState(e.data.cause || "Failed", false, false);
+                        endSession();
+                    });
+                    session.on("ended", function(e) {
+                        log("Session 'ended' event");
+                        setState(e.data.cause || "Ended", false, false);
+                        endSession();
+                    });
+                }
+                function setState(status, active, inProgress) {
+                    log("Session.setState(): status=" + status + "; active=" + active + "; inProgress=" + inProgress);
+                    self.status = status;
+                    self.active = active;
+                    self.inProgress = inProgress;
+                    events.trigger("status", "active", "inprogress");
+                }
+                function endSession() {
+                    log("Session.endSession()");
+                    connection.session = null;
+                    events.trigger("end");
+                }
+            }
+
+
+            function Connection(sipData) {
+
+                var self = this;
+                var events = new Events();
+                var phoneContext;
+                var lastCalledNumber;
+
+                this.status = "Connecting...";
+                this.connecting = true;
+                this.connected = false;
+                this.session = null;
+                this.canCall = true;
+
+                this.on = function(event, fn) {
+                    log("Connection.on() '" + event + "' event");
+                    events.on(event, fn);
+                };
+                this.off = function(event, fn) {
+                    log("Connection.off() '" + event + "' event");
+                    events.off(event, fn);
+                };
+                this.call = function(number) {
+                    log("Connection.call()");
+
+                    if (!self.connected) {
+                        log("Connection.call(): connected == false");
+                        return;
+                    }
+
+                    var options = {
+                        'extraHeaders': ['X-Foo: foo', 'X-Bar: bar'],
+                        'mediaConstraints': { 'audio': true, 'video': false }
+                    };
+
+                    lastCalledNumber = number;
+                    phoneContext.call('sip:' + number + '@' + sipData.realm, options);
+                };
+                this.close = function () {
+                    log("Connection.close()");
+
+                    if (phoneContext) {
+                        setState("Disconnected", false, false);
+                        phoneContext.stop();
+                    }
+                };
+
+                init();
+
+                function init() {
+                    log("Connection.init()");
+
+                    var configuration = {
+                        'ws_servers': sipData.websocket_url,
+                        'uri': "sip:" + sipData.callerid + "@" + sipData.realm,
+                        'password': sipData.password
+                    };
+
+                    try {
+                        phoneContext = new JsSIP.UA(configuration);
+                    } catch(e) {
+                    }
+
+                    if (!phoneContext) {
+                        setState("Connection error", false, false);
+                        return;
+                    }
+
+                    attachEvents();
+
+                    phoneContext.start();
+                    phoneContext.register();
+                }
+                function attachEvents() {
+                    phoneContext.on("connected", function(e) {
+                        log("Connection 'connected' event");
+                        setState("Connected", false, true);
+                    });
+                    phoneContext.on("disconnected", function(e) {
+                        log("Connection 'disconnected' event");
+                        setState("Disconnected", false, false);
+                    });
+                    phoneContext.on("registered", function(e) {
+                        log("Connection 'registered' event");
+                        setState("Registered", false, true);
+                    });
+                    phoneContext.on("unregistered", function(e) {
+                        log("Connection 'unregistered' event");
+                        setState("Connected", false, true);
+                    });
+                    phoneContext.on("newRTCSession", function(e) {
+                        log("Connection 'newRTCSession' event");
+                        var session = e.data.session;
+
+                        if (self.session || !self.canCall) {
+                            log("Connection 'newRTCSession' event: session already exists or canCall == false");
+                            session.terminate();
+                            return;
+                        }
+
+                        if (e.data.originator == "remote") {
+                            self.session = new Session(session, "in", self, e.data.request.from.display_name);
+                            events.trigger("inbound");
+                        } else {
+                            self.session = new Session(session, "out", self, lastCalledNumber);
+                            events.trigger("outbound");
+                        }
+                    });
+                }
+                function setState(status, connecting, connected) {
+                    log("Session.setState(): status=" + status + "; connecting=" + connecting + "; connected=" + connected);
+                    self.status = status;
+                    self.connecting = connecting;
+                    self.connected = connected;
+                    events.trigger("status", "connecting", "connected");
+                }
+            }
+
+
+            var connectionInstance;
+
+            window.connect = function(sipData) {
+                log("connect()");
+
+                if (connectionInstance) {
+                    return connectionInstance;
+                }
+
+                connectionInstance = new Connection(sipData);
+                return connectionInstance;
+            };
+            window.getConnection = function() {
+                log("getConnection()");
+
+                return connectionInstance;
+            };
+            window.kill = function() {
+                log("kill()");
+
+                if (connectionInstance) {
+                    if (connectionInstance.session) {
+                        connectionInstance.session.terminate();
+                    }
+
+                    connectionInstance.close();
+                    connectionInstance = null;
+                }
+
+                log("kill() completed");
+            };
+
+            window.onunload = function() {
+                if (connectionInstance) {
+                    if (connectionInstance.session) {
+                        connectionInstance.session.terminate();
+                    }
+
+                    connectionInstance.close();
+                }
+            };
+            window.onbeforeunload = function() {
+                if (connectionInstance &&
+                    connectionInstance.session &&
+                    connectionInstance.session.active) {
+                    return "Your call session will be terminated if you leave this page";
+                }
+                return null;
+            };
+
+        })($, JsSIP);
+    </script>
+</head>
+<body>
+    <div id="log">
+        
+    </div>
+</body>
+</html>

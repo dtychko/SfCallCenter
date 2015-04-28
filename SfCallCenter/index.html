@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <title>Index</title>
+        <link href="Content/default.css" rel="stylesheet" type="text/css" />
+        
+        <style>
+        </style>
+
+        <script>
+            window.app = window.app || {};
+            app.Urls = {
+                auth: "/Home/Auth",
+                popup: "/popup.html",
+                ringtone: "/Audio/ringtone.wav",
+                ringbacktone: "/Audio/ringbacktone.wav",
+                dtmf: "/Audio/dtmf.wav"
+                //auth: "/ami/webphone/auth",
+                //popup: "/public/salesforce/popup.html",
+                //ringtone: "/public/salesforce/Audio/ringtone.wav",
+                //ringbacktone: "/public/salesforce/Audio/ringbacktone.wav",
+                //dtmf: "/public/salesforce/Audio/dtmf.wav"
+            };
+        </script>
+
+        <script src="https://na15.salesforce.com/support/api/28.0/interaction.js"></script>
+        <script src="Scripts/jquery-1.8.2.js" type="text/javascript"></script>
+        <script src="Scripts/knockout-2.2.0.debug.js" type="text/javascript"></script>
+        <script src="Scripts/jssip.js" type="text/javascript"></script>
+        <script src="js/utils.js" type="text/javascript"></script>
+        <script src="js/signInFormViewModel.js" type="text/javascript"></script>
+        <script src="js/connection.js" type="text/javascript"></script>
+        <script src="js/callViewModel.js" type="text/javascript"></script>
+        <script src="js/phoneViewModel.js" type="text/javascript"></script>
+        <script src="js/app.js" type="text/javascript"></script>
+        <script src="js/main.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <div class="container">
+            <div id="phone" style="display: none;" data-bind="style: { display: 'block' }">
+                
+                <div id="head">
+                    <img src="Content/Images/logo.png" style="width: 103px; height: 30px; float: left;"/>
+
+                    <span class="sign-out" data-bind="visible: phone"><a href="#" data-bind="click: signOut">Sign Out</a></span>
+                </div>
+
+                <div id="popup-reminder" data-bind="visible: popupBlocked" style="background-color: #F8F8F8; padding: 10px; font-size: 12px;">
+                    <p>If you did not see an authentication window, please allow pop-ups for somesite.com</p>
+                    <ol style="padding-left: 25px;">
+                        <li>
+                            Click this icon in the upper right corner of your browser:
+                            <img src="Content/Images/allowpopup.png" style="width: 141px; height: 107px; display: block; margin: 5px 0;"/>
+                        </li>
+                        <li>Select <b>"Always allow popups from somesite.com"</b></li>
+                        <li>Refresh the page, and try again</li>
+                    </ol>
+                </div>
+                
+                <div id="sign-in" data-bind="with: signInForm">
+                    <form id="sign-in-form" data-bind="submit: signIn">
+                        <span id="sign-in-error" class="error-msg" data-bind="text: errorMessage"></span>
+                        <label for="login">Login</label>
+                        <input id="login" class="field" type="text" data-bind="value: login"/>
+                        <label for="pass">Password</label>
+                        <input id="pass" class="field" type="password" data-bind="value: pass"/>
+
+                        <input id="sign-in-btn" class="key success-btn" type="submit" value="Sign In"/>
+                    </form>
+                </div>
+
+                <div data-bind="with: phone">
+                    <div id="connection-info">
+                        <div class="connection-info-group">
+                            <span class="lbl">User</span>
+                            <span class="val" data-bind="text: userName">1062</span>
+                        </div>
+                    
+                        <div class="connection-info-group">
+                            <span class="lbl">Status</span>
+                            <span class="val" data-bind="text: connection().status">Connected</span>
+                        </div>
+                    </div>
+                
+                    <div id="screen" data-bind="visible: !call()">
+                        <input id="number" type="text" data-bind="value: number, valueUpdate: 'keypress'"/>
+                    </div>
+                    
+                    <div id="keypad" data-bind="visible: !call()">
+                        <button class="key toggle-keypad-btn" data-bind="click: toggleKeypad, text: keypadVisible() ? 'Hide' : 'Show', css: {'success-btn': !keypadVisible(), 'fail-btn': keypadVisible()}"></button>
+
+                        <ul data-bind="visible: keypadVisible">
+                            <li><button class="key" data-bind="click: press.bind($data, 1)">1</button></li>
+                            <li><button class="key" data-bind="click: press.bind($data, 2)">2</button></li>
+                            <li><button class="key" data-bind="click: press.bind($data, 3)">3</button></li>
+                            <li><button class="key" data-bind="click: press.bind($data, 4)">4</button></li>
+                            <li><button class="key" data-bind="click: press.bind($data, 5)">5</button></li>
+                            <li><button class="key" data-bind="click: press.bind($data, 6)">6</button></li>
+                            <li><button class="key" data-bind="click: press.bind($data, 7)">7</button></li>
+                            <li><button class="key" data-bind="click: press.bind($data, 8)">8</button></li>
+                            <li><button class="key" data-bind="click: press.bind($data, 9)">9</button></li>
+                            <li><button class="key">*</button></li>
+                            <li><button class="key" data-bind="click: press.bind($data, 0)">0</button></li>
+                            <li><button class="key">#</button></li>
+                            <li><button class="key success-btn call-btn" data-bind="click: startCall, enable: number() && canCall()"></button></li>
+                            <li><button class="key backspace" data-bind="click: backspace"></button></li>
+                        </ul>
+                    </div>
+                
+                    <div id="call-info" data-bind="with: call, visible: call">
+                        <div class="call-info-group">
+                            <span class="lbl" data-bind="text: direction == 'in' ? 'Caller ID' : 'Dialed Number'">Dialed Number</span>
+                            <span class="val" data-bind="text: number">1063</span>
+                        </div>
+                    
+                        <div class="call-info-group">
+                            <span class="lbl">Call Status</span>
+                            <span class="val" data-bind="text: status">Trying...</span>
+                        </div>
+                    
+                        <div class="call-info-group" data-bind="visible: durationVisible">
+                            <span class="lbl">Duration</span>
+                            <span class="val" data-bind="text: displayDuration">00:15</span>
+                        </div>
+                    
+                        <div class="call-info-group" data-bind="visible: contactsVisible">
+                            <span class="lbl">Contacts</span>
+                            <span class="val">
+                                <ul style="list-style: none; margin: 0; padding: 0;" data-bind="foreach: contacts()">
+                                    <li><a href="#" data-bind="text: name, click: open"></a></li>
+                                </ul>
+                            </span>
+                        </div>
+                    
+                        <button class="key success-btn accept-btn call-action-btn" data-bind="click: accept, visible: canAccept"></button>
+                        <button class="key fail-btn hang-up-btn call-action-btn" data-bind="click: hangUp, visible: canHangUp"></button>
+                        <button class="key success-btn continue-btn call-action-btn" data-bind="click: $parent.hideCall, visible: !active()"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+
